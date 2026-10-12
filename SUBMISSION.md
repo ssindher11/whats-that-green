@@ -1,6 +1,6 @@
 # 🌿 What's that Green Thing — Instant Plant Identification
 
-*This is a submission for the [Hacktoberfest Open-Source AI Challenge Week 1: Touch Grass](https://dev.to/challenges/hacktoberfest-week1-2026-10-05)*
+_This is a submission for the [Hacktoberfest Open-Source AI Challenge Week 1: Touch Grass](https://dev.to/challenges/hacktoberfest-week1-2026-10-05)_
 
 ---
 
@@ -11,6 +11,7 @@
 Modern life traps us behind monitors and glowing rectangles. We walk past hundreds of fascinating plant species every day in parks, sidewalk cracks, hiking trails, and backyards—often without knowing what they are, how they survive, or how to nurture them.
 
 **What's that Green Thing** bridges the gap between technology and the physical world. Users can step outside with their phone or laptop, point their camera at any mysterious leaf, flower, or succulent, and instantly receive:
+
 - **Common & Botanical Latin Names**: Spot-on taxonomy to bridge everyday curiosity with real botanical science.
 - **Estimated Confidence Score**: Transparent certainty ratings on every specimen analyzed.
 - **Engaging 2-Sentence Field Summary**: An approachable look at the plant’s origins, adaptations, and natural habitat.
@@ -22,13 +23,13 @@ Whether you are an urban forager, weekend hiker, budding gardener, or just someo
 
 ## Demo
 
-- **Live Demo Link:** `https://whats-that-green.example.com` *(Update with your deployed URL)*
 - **Local Preview:** Run locally in seconds with `python app.py` at `http://localhost:5001`.
 
 ### Highlights
+
 - 📷 **Live Viewfinder:** Stream direct camera feed with an interactive specimen reticle and one-tap shutter capture.
 - 📁 **Drag-and-Drop:** Instant upload supporting JPEG, PNG, and WebP images up to 16 MB.
-- ⏳ **Botanical Loading Ticker:** Cycles through playful nature-themed status updates (*"Consulting the forest spirits..."*, *"Analyzing leaf venation patterns..."*).
+- ⏳ **Botanical Loading Ticker:** Cycles through playful nature-themed status updates (_"Consulting the forest spirits..."_, _"Analyzing leaf venation patterns..."_).
 - 📋 **Botanical Field Card:** Displays a clean presentation card with a one-click "Copy Botanical Card" button.
 
 ---
@@ -37,9 +38,10 @@ Whether you are an urban forager, weekend hiker, budding gardener, or just someo
 
 The complete source code is open source and available on GitHub:
 
-👉 **[https://github.com/shrey/whats-that-green](https://github.com/shrey/whats-that-green)** *(Replace with your repository URL)*
+👉 **[https://github.com/ssindher11/whats-that-green](https://github.com/ssindher11/whats-that-green)**
 
 ### Architecture Overview
+
 - **`app.py`**: Lightweight Python/Flask server utilizing the official `google-genai` SDK with Pydantic structured schemas, image pre-processing (Pillow), and automated model resilience.
 - **`templates/index.html`**: Zero-build frontend combining Tailwind CSS (via CDN) and vanilla JavaScript for camera streams, canvas capture, and responsive botanical UI cards.
 - **`requirements.txt`**: Minimal, clean dependencies (`flask`, `google-genai`, `python-dotenv`, `pillow`).
@@ -49,6 +51,7 @@ The complete source code is open source and available on GitHub:
 ## How I Built It
 
 ### 1. Multimodal AI & Structured Outputs
+
 The intelligence engine is built on **Google Gemini 3.8 Flash** via the official `google-genai` Python SDK. We configure Gemini with a specialized botanical persona and enforce rigid JSON schemas via Pydantic:
 
 ```python
@@ -67,13 +70,17 @@ class PlantIdentification(BaseModel):
 ```
 
 ### 2. High-Effort Reasoning (`thinking_config`)
+
 Plant morphology can be subtle—differentiating lookalike cultivars or venation patterns requires more than superficial classification. By passing:
+
 ```python
 thinking_config=types.ThinkingConfig(thinking_budget=1024)
 ```
+
 the model reasons through leaf margins, stem nodes, and petiole structure prior to synthesizing the final diagnostic report.
 
 ### 3. Native Browser Camera Integration
+
 Rather than requiring a native mobile app download, the app leverages the browser’s native `navigator.mediaDevices.getUserMedia` API. Users can frame specimens directly on their device screen, flip between front and rear cameras, and snapshot frames directly onto an HTML5 canvas for immediate analysis.
 
 ---
@@ -91,11 +98,10 @@ Open innovation is essential for environmental literacy and real-world technolog
 ## My Agent Session
 
 This application was developed pair-programming with **Antigravity**, leveraging agentic coding workflows to:
+
 - Rapidly scaffold the Flask backend and implement the Google GenAI SDK integration with Pydantic structured schema outputs.
 - Build and polish the responsive Tailwind CSS single-page interface with live webcam controls and loading animations.
 - Perform end-to-end multimodal testing against real botanical photos and verify edge cases (e.g., distinguishing real foliage from illustrations and non-plant objects).
-
-*(Include your DevRelay session link or agent transcript if applicable!)*
 
 ---
 
