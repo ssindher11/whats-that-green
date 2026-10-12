@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What's that Green Thing — Instant Plant Identification</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sage: {
+              50: '#f5f7f5',
+              100: '#e6ece6',
+              200: '#cddbcd',
+              300: '#a7c2a7',
+              400: '#7fa682',
+              500: '#5c8760',
+              600: '#476d4a',
+              700: '#38563b',
+              800: '#2d4530',
+              900: '#1d2c20',
+            },
+            forest: {
+              DEFAULT: '#264653',
+              dark: '#1b333c'
+            },
+            sand: '#F7F5F0'
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            serif: ['"Playfair Display"', 'Georgia', 'serif']
+          },
+          boxShadow: {
+            'soft': '0 10px 30px -5px rgba(45, 69, 48, 0.08), 0 4px 12px -2px rgba(45, 69, 48, 0.04)',
+            'elevated': '0 20px 40px -10px rgba(45, 69, 48, 0.12), 0 8px 16px -4px rgba(45, 69, 48, 0.06)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes leafFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(4deg); }
+    }
+    .animate-float {
+      animation: leafFloat 4s ease-in-out infinite;
+    }
+    @keyframes pulseRing {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 0.3; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .animate-pulse-ring {
+      animation: pulseRing 2.4s ease-in-out infinite;
+    }
+    .shutter-flash {
+      animation: flash 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes flash {
+      0% { opacity: 0.9; }
+      100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body class="bg-[#f7f9f7] text-slate-800 font-sans min-h-screen flex flex-col selection:bg-sage-200 selection:text-sage-900">
+
+  <!-- Ambient Botanical Background Accent -->
+  <div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-sage-200/40 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/3 -right-32 w-80 h-80 bg-emerald-100/50 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-32 left-1/4 w-96 h-96 bg-teal-100/40 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="border-b border-sage-100/80 bg-white/75 backdrop-blur-md sticky top-0 z-30 transition-all duration-300">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sage-600 to-sage-400 flex items-center justify-center text-white shadow-md shadow-sage-500/20">
+          <svg class="w-6 h-6 transform -rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold font-serif tracking-tight text-sage-900">What's that Green Thing</h1>
+          <p class="text-xs text-sage-600 font-medium hidden sm:block">AI Botanical Specimen Identifier</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-sage-100 text-sage-800 border border-sage-200/60">
+          <span class="w-2 h-2 mr-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          Gemini 3.8 Flash
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-grow max-w-4xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-12">
+
+    <!-- Hero Intro -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sage-100/80 border border-sage-200 text-sage-800 text-xs font-semibold uppercase tracking-wider mb-3">
+        <span>🌱 Nature's Mystery Solved</span>
+      </div>
+      <h2 class="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-sage-900 tracking-tight mb-3">
+        Uncover the secret life of your plants.
+      </h2>
+      <p class="text-slate-600 max-w-xl mx-auto text-sm sm:text-base leading-relaxed">
+        Snap a live photo or drop an image of any leaf, stem, flower, or succulent to instantly discover its botanical identity and tailored care guide.
+      </p>
+    </div>
+
+    <!-- Error Banner (Hidden by default) -->
+    <div id="errorBanner" class="hidden mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3 shadow-sm transition-all duration-300">
+      <svg class="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+      </svg>
+      <div class="flex-grow">
+        <h4 class="font-semibold text-sm text-rose-900" id="errorTitle">Oops! Something went wrong</h4>
+        <p class="text-xs sm:text-sm text-rose-700 mt-0.5" id="errorMessage">Unable to process the image.</p>
+      </div>
+      <button onclick="dismissError()" class="text-rose-500 hover:text-rose-800 p-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+
+    <!-- Interactive Card Area -->
+    <div class="bg-white rounded-3xl border border-sage-100 shadow-soft overflow-hidden transition-all duration-300">
+
+      <!-- Navigation Tabs (Upload vs Camera) -->
+      <div class="flex border-b border-sage-100 bg-sage-50/50 p-1.5 sm:p-2 gap-2">
+        <button id="tabUploadBtn" onclick="switchTab('upload')" class="flex-1 py-2.5 px-4 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 bg-white text-sage-900 shadow-sm">
+          <svg class="w-4 h-4 text-sage-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+          </svg>
+          Upload Photo
+        </button>
+        <button id="tabCameraBtn" onclick="switchTab('camera')" class="flex-1 py-2.5 px-4 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 text-slate-600 hover:text-sage-900 hover:bg-white/50">
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          Live Camera
+        </button>
+      </div>
+
+      <!-- Tab Content Area -->
+      <div class="p-6 sm:p-8">
+
+        <!-- 1. Upload View -->
+        <div id="viewUpload" class="space-y-4">
+          <div id="dropZone" 
+               class="relative border-2 border-dashed border-sage-200 hover:border-sage-400 rounded-3xl p-8 sm:p-12 text-center transition-all duration-200 bg-sage-50/30 hover:bg-sage-50/70 cursor-pointer group">
+            <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp,image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+            
+            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-sage-100 group-hover:bg-sage-200/80 flex items-center justify-center text-sage-600 transition-colors duration-200">
+              <svg class="w-8 h-8 transform group-hover:-translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+              </svg>
+            </div>
+            
+            <p class="text-base font-semibold text-slate-800 mb-1">
+              Drag & drop plant image here, or <span class="text-sage-600 underline underline-offset-2">browse</span>
+            </p>
+            <p class="text-xs text-slate-500">
+              Supports JPEG, PNG, and WebP (up to 16 MB)
+            </p>
+          </div>
+        </div>
+
+        <!-- 2. Camera View -->
+        <div id="viewCamera" class="hidden space-y-4">
+          <!-- Viewfinder Frame -->
+          <div class="relative bg-slate-900 rounded-3xl overflow-hidden aspect-[4/3] sm:aspect-[16/9] flex items-center justify-center shadow-inner">
+            <!-- Video feed -->
+            <video id="cameraVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
+            
+            <!-- Shutter Flash Overlay -->
+            <div id="shutterFlash" class="absolute inset-0 bg-white opacity-0 pointer-events-none"></div>
+
+            <!-- Botanical Target Reticle Overlay -->
+            <div id="cameraGrid" class="absolute inset-0 pointer-events-none border-[1.5px] border-white/20 m-6 rounded-2xl flex items-center justify-center">
+              <div class="w-24 h-24 border border-white/40 rounded-full flex items-center justify-center">
+                <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+              </div>
+              <span class="absolute top-3 left-4 text-[10px] uppercase font-mono tracking-wider text-white/70 bg-black/40 px-2 py-0.5 rounded-md backdrop-blur-sm">
+                Specimen Viewfinder
+              </span>
+            </div>
+
+            <!-- Camera Inactive / Permission Prompt -->
+            <div id="cameraPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-slate-800 text-white z-20">
+              <div class="w-16 h-16 rounded-full bg-slate-700/80 flex items-center justify-center mb-4 text-emerald-400">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                </svg>
+              </div>
+              <p class="font-medium text-base mb-1">Camera Stream Standby</p>
+              <p class="text-xs text-slate-300 max-w-sm mb-4">Click below to activate your webcam and align the plant in the viewfinder.</p>
+              <button onclick="startCamera()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold shadow-md transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Activate Camera
+              </button>
+            </div>
+          </div>
+
+          <!-- Camera Controls Bar -->
+          <div id="cameraControls" class="hidden flex items-center justify-between bg-sage-50 rounded-2xl p-3 border border-sage-200">
+            <button onclick="toggleCameraFacing()" title="Switch Front/Rear Camera" class="px-3 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 shadow-sm flex items-center gap-1.5 transition">
+              <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+              Flip Camera
+            </button>
+
+            <!-- Big Shutter Button -->
+            <button onclick="snapPhoto()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold rounded-full shadow-lg shadow-emerald-600/30 flex items-center gap-2 transition-all">
+              <span class="w-3 h-3 rounded-full bg-white animate-ping"></span>
+              Snap Photo
+            </button>
+
+            <button onclick="stopCamera()" class="px-3 py-2 text-xs font-semibold text-rose-700 bg-white hover:bg-rose-50 rounded-xl border border-rose-200 shadow-sm transition">
+              Close Camera
+            </button>
+          </div>
+          <!-- Hidden canvas for rendering video snapshot -->
+          <canvas id="cameraCanvas" class="hidden"></canvas>
+        </div>
+
+        <!-- Selected Image Preview Card (Common for both input methods) -->
+        <div id="previewCard" class="hidden mt-6 p-4 rounded-2xl bg-sage-50 border border-sage-200/80">
+          <div class="flex flex-col sm:flex-row items-center gap-4">
+            <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-white shadow-sm flex-shrink-0 border border-sage-200">
+              <img id="previewImage" src="" alt="Selected Plant" class="w-full h-full object-cover">
+              <span class="absolute top-1 right-1 bg-emerald-600 text-white p-1 rounded-full shadow">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              </span>
+            </div>
+            
+            <div class="flex-grow text-center sm:text-left">
+              <span class="inline-block text-[11px] font-bold text-sage-700 uppercase tracking-wider mb-1">Ready for Botanical Analysis</span>
+              <h4 id="previewFilename" class="text-sm font-semibold text-slate-800 truncate max-w-xs sm:max-w-md">plant_specimen.jpg</h4>
+              <p id="previewFilesize" class="text-xs text-slate-500 mt-0.5">2.4 MB</p>
+            </div>
+
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <button onclick="clearSelectedImage()" class="flex-1 sm:flex-initial px-3 py-2 text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-slate-200 hover:border-rose-200 bg-white transition">
+                Remove
+              </button>
+              <button id="identifyBtn" onclick="identifyPlant()" class="flex-1 sm:flex-initial px-6 py-2.5 bg-gradient-to-r from-sage-600 to-sage-500 hover:from-sage-700 hover:to-sage-600 text-white text-sm font-bold rounded-xl shadow-md shadow-sage-600/25 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                </svg>
+                Identify Plant
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Loading State Card (Hidden by default) -->
+    <div id="loadingCard" class="hidden mt-8 bg-white rounded-3xl border border-sage-100 p-8 sm:p-12 text-center shadow-soft relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-b from-sage-50/40 to-transparent pointer-events-none"></div>
+
+      <!-- Animated Botanical Pulse Spinner -->
+      <div class="relative w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+        <div class="absolute inset-0 rounded-full bg-emerald-200/50 animate-pulse-ring"></div>
+        <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-sage-600 to-emerald-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 animate-float">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+          </svg>
+        </div>
+      </div>
+
+      <h3 class="text-xl font-bold font-serif text-sage-900 mb-2">Analyzing Botanical Specimen</h3>
+      
+      <!-- Fun Dynamic Text Ticker -->
+      <div class="h-8 flex items-center justify-center">
+        <p id="tickerText" class="text-sm font-medium text-emerald-700 bg-emerald-50/80 border border-emerald-100 px-4 py-1.5 rounded-full inline-block transition-opacity duration-300">
+          Consulting the forest spirits...
+        </p>
+      </div>
+
+      <p class="text-xs text-slate-400 mt-4">Powered by Gemini 3.8 Flash high-precision multimodal reasoning</p>
+    </div>
+
+    <!-- Results Card (Hidden by default) -->
+    <div id="resultCard" class="hidden mt-8 bg-white rounded-3xl border border-sage-100 shadow-elevated overflow-hidden transition-all duration-300">
+      
+      <!-- Result Top Accent Banner -->
+      <div class="bg-gradient-to-r from-sage-700 via-sage-600 to-emerald-700 px-6 sm:px-8 py-5 text-white flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-2.5">
+          <span class="p-1.5 rounded-lg bg-white/20 backdrop-blur-md">
+            <svg class="w-5 h-5 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </span>
+          <span class="text-xs font-semibold tracking-wide uppercase text-sage-100">Specimen Identification Complete</span>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <!-- Confidence Badge -->
+          <span id="resultConfidenceBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white backdrop-blur-sm border border-white/20 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-300"></span>
+            <span id="resultConfidence">98% High Confidence</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Main Result Content -->
+      <div class="p-6 sm:p-8 space-y-8">
+        
+        <!-- Header Info & Specimen Snapshot -->
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-sage-100">
+          <div>
+            <span class="text-xs font-bold text-sage-600 uppercase tracking-widest">Common Name</span>
+            <h3 id="resultPlantName" class="text-3xl sm:text-4xl font-serif font-bold text-slate-900 mt-0.5 tracking-tight">
+              Monstera Deliciosa
+            </h3>
+            <p class="text-base sm:text-lg text-sage-700 italic font-serif mt-1 flex items-center gap-2">
+              <span id="resultScientificName">Monstera deliciosa Liebm.</span>
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-sage-200 shadow-md flex-shrink-0">
+              <img id="resultImagePreview" src="" alt="Identified Specimen" class="w-full h-full object-cover">
+            </div>
+          </div>
+        </div>
+
+        <!-- Botanical Description -->
+        <div class="bg-sage-50/70 rounded-2xl p-5 sm:p-6 border border-sage-200/60 relative">
+          <div class="absolute -top-3 left-6 px-2.5 py-0.5 rounded-md bg-sage-600 text-white text-[11px] font-bold uppercase tracking-wider">
+            Botanical Overview
+          </div>
+          <p id="resultDescription" class="text-slate-700 text-sm sm:text-base leading-relaxed pt-1">
+            An iconic evergreen vine native to the tropical rainforests of Central America, renowned for its distinctive fenestrated leaves. In indoor spaces, it thrives with moderate care and adds a majestic jungle aesthetic to any room.
+          </p>
+        </div>
+
+        <!-- 3 Essential Care Tips -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+              Essential Care Guidelines
+            </h4>
+            <span class="text-xs text-slate-400 font-medium">Water • Light • Soil</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Water Card -->
+            <div class="bg-blue-50/50 hover:bg-blue-50/80 transition-colors p-5 rounded-2xl border border-blue-100">
+              <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 mb-3 shadow-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                </svg>
+              </div>
+              <h5 class="font-bold text-sm text-slate-900 mb-1">Watering Routine</h5>
+              <p id="careWater" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Water when the top 2 inches of soil feel dry to the touch. Avoid overwatering to prevent root rot.
+              </p>
+            </div>
+
+            <!-- Light Card -->
+            <div class="bg-amber-50/50 hover:bg-amber-50/80 transition-colors p-5 rounded-2xl border border-amber-100">
+              <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 mb-3 shadow-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+              </div>
+              <h5 class="font-bold text-sm text-slate-900 mb-1">Sunlight Exposure</h5>
+              <p id="careLight" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Thrives in bright, indirect sunlight. Direct harsh afternoon sun can scorch the delicate foliage.
+              </p>
+            </div>
+
+            <!-- Soil Card -->
+            <div class="bg-emerald-50/50 hover:bg-emerald-50/80 transition-colors p-5 rounded-2xl border border-emerald-100">
+              <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 mb-3 shadow-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                </svg>
+              </div>
+              <h5 class="font-bold text-sm text-slate-900 mb-1">Soil & Potting Medium</h5>
+              <p id="careSoil" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Well-draining, peat-based potting mix with perlite or orchid bark to ensure proper aeration.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Result Footer Actions -->
+        <div class="pt-4 border-t border-sage-100 flex flex-wrap items-center justify-between gap-3">
+          <button onclick="resetApp()" class="px-5 py-2.5 rounded-xl border border-sage-200 text-slate-700 hover:text-sage-900 hover:bg-sage-50 text-sm font-semibold transition flex items-center gap-2">
+            <svg class="w-4 h-4 text-sage-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Identify Another Plant
+          </button>
+
+          <button id="copyResultBtn" onclick="copyResultSummary()" class="px-5 py-2.5 rounded-xl bg-sage-100 hover:bg-sage-200 text-sage-900 text-sm font-semibold transition flex items-center gap-2">
+            <svg class="w-4 h-4 text-sage-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+            <span id="copyBtnText">Copy Botanical Card</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Nature Inspiration Footer Note -->
+    <div class="mt-12 text-center text-xs text-slate-500">
+      <p class="flex items-center justify-center gap-1.5">
+        <span>🌿</span>
+        <span>Take a moment to step outside and observe the intricate patterns in every leaf.</span>
+      </p>
+    </div>
+
+  </main>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    // State Variables
+    let currentTab = 'upload';
+    let selectedFile = null;
+    let selectedDataUrl = null;
+    let cameraStream = null;
+    let cameraFacingMode = 'environment'; // 'environment' (back) or 'user' (front)
+    let tickerInterval = null;
+    let lastResult = null;
+
+    // Loading Ticker Phrases
+    const tickerPhrases = [
+      "Consulting the forest spirits...",
+      "Analyzing leaf venation and patterns...",
+      "Examining chlorophyll contours and textures...",
+      "Cross-referencing global botanical archives...",
+      "Deciphering nature's green secrets...",
+      "Evaluating stems, petals, and morphology...",
+      "Synthesizing optimal water, light, and soil tips...",
+      "Preparing your botanical field report..."
+    ];
+
+    // DOM Elements
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const previewCard = document.getElementById('previewCard');
+    const previewImage = document.getElementById('previewImage');
+    const previewFilename = document.getElementById('previewFilename');
+    const previewFilesize = document.getElementById('previewFilesize');
+    const loadingCard = document.getElementById('loadingCard');
+    const tickerText = document.getElementById('tickerText');
+    const resultCard = document.getElementById('resultCard');
+    const errorBanner = document.getElementById('errorBanner');
+    const errorTitle = document.getElementById('errorTitle');
+    const errorMessage = document.getElementById('errorMessage');
+
+    const tabUploadBtn = document.getElementById('tabUploadBtn');
+    const tabCameraBtn = document.getElementById('tabCameraBtn');
+    const viewUpload = document.getElementById('viewUpload');
+    const viewCamera = document.getElementById('viewCamera');
+
+    const cameraVideo = document.getElementById('cameraVideo');
+    const cameraCanvas = document.getElementById('cameraCanvas');
+    const cameraPlaceholder = document.getElementById('cameraPlaceholder');
+    const cameraControls = document.getElementById('cameraControls');
+    const shutterFlash = document.getElementById('shutterFlash');
+
+    // Tab Navigation
+    function switchTab(tab) {
+      if (currentTab === tab) return;
+      currentTab = tab;
+
+      if (tab === 'upload') {
+        tabUploadBtn.className = "flex-1 py-2.5 px-4 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 bg-white text-sage-900 shadow-sm";
+        tabCameraBtn.className = "flex-1 py-2.5 px-4 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 text-slate-600 hover:text-sage-900 hover:bg-white/50";
+        viewUpload.classList.remove('hidden');
+        viewCamera.classList.add('hidden');
+        stopCamera();
+      } else {
+        tabCameraBtn.className = "flex-1 py-2.5 px-4 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 bg-white text-sage-900 shadow-sm";
+        tabUploadBtn.className = "flex-1 py-2.5 px-4 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 text-slate-600 hover:text-sage-900 hover:bg-white/50";
+        viewCamera.classList.remove('hidden');
+        viewUpload.classList.add('hidden');
+        startCamera();
+      }
+    }
+
+    // Drag and Drop Listeners
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('border-sage-500', 'bg-sage-100/60');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('border-sage-500', 'bg-sage-100/60');
+      });
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        handleFileSelection(files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    function handleFileSelection(file) {
+      dismissError();
+      const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!validTypes.includes(file.type) && !file.name.match(/\.(jpg|jpeg|png|webp)$/i)) {
+        showError("Unsupported File", "Please upload a JPEG, PNG, or WebP photo.");
+        return;
+      }
+
+      if (file.size > 16 * 1024 * 1024) {
+        showError("File Too Large", "Please select an image smaller than 16 MB.");
+        return;
+      }
+
+      selectedFile = file;
+      selectedDataUrl = null;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImage.src = e.target.result;
+        previewFilename.textContent = file.name;
+        previewFilesize.textContent = formatBytes(file.size);
+        previewCard.classList.remove('hidden');
+        resultCard.classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Camera Management
+    async function startCamera() {
+      dismissError();
+      try {
+        if (cameraStream) {
+          stopCamera();
+        }
+
+        const constraints = {
+          video: {
+            facingMode: cameraFacingMode,
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: false
+        };
+
+        cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+        cameraVideo.srcObject = cameraStream;
+        await cameraVideo.play();
+
+        cameraPlaceholder.classList.add('hidden');
+        cameraControls.classList.remove('hidden');
+      } catch (err) {
+        console.error("Camera access failed:", err);
+        cameraPlaceholder.classList.remove('hidden');
+        cameraControls.classList.add('hidden');
+        showError("Camera Access Blocked", "Please grant browser camera permissions or upload an image file instead.");
+      }
+    }
+
+    function stopCamera() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+      cameraVideo.srcObject = null;
+      cameraPlaceholder.classList.remove('hidden');
+      cameraControls.classList.add('hidden');
+    }
+
+    async function toggleCameraFacing() {
+      cameraFacingMode = (cameraFacingMode === 'environment') ? 'user' : 'environment';
+      await startCamera();
+    }
+
+    function snapPhoto() {
+      if (!cameraVideo.videoWidth) {
+        showError("Camera Not Ready", "Please wait for camera stream to activate.");
+        return;
+      }
+
+      // Trigger shutter flash visual effect
+      shutterFlash.classList.add('shutter-flash');
+      setTimeout(() => shutterFlash.classList.remove('shutter-flash'), 300);
+
+      // Render video frame to canvas
+      cameraCanvas.width = cameraVideo.videoWidth;
+      cameraCanvas.height = cameraVideo.videoHeight;
+      const ctx = cameraCanvas.getContext('2d');
+      ctx.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+
+      const dataUrl = cameraCanvas.toDataURL('image/jpeg', 0.92);
+      selectedDataUrl = dataUrl;
+      selectedFile = null;
+
+      // Update Preview Card
+      previewImage.src = dataUrl;
+      previewFilename.textContent = "Camera_Specimen_Capture.jpg";
+      previewFilesize.textContent = "Live Snapshot (" + cameraCanvas.width + "x" + cameraCanvas.height + ")";
+      previewCard.classList.remove('hidden');
+      resultCard.classList.add('hidden');
+
+      // Scroll smoothly to preview
+      previewCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function clearSelectedImage() {
+      selectedFile = null;
+      selectedDataUrl = null;
+      fileInput.value = '';
+      previewCard.classList.add('hidden');
+      resultCard.classList.add('hidden');
+      dismissError();
+    }
+
+    // Dynamic Loading Ticker
+    function startTicker() {
+      let index = 0;
+      tickerText.textContent = tickerPhrases[0];
+      tickerInterval = setInterval(() => {
+        index = (index + 1) % tickerPhrases.length;
+        tickerText.style.opacity = '0';
+        setTimeout(() => {
+          tickerText.textContent = tickerPhrases[index];
+          tickerText.style.opacity = '1';
+        }, 200);
+      }, 2200);
+    }
+
+    function stopTicker() {
+      if (tickerInterval) {
+        clearInterval(tickerInterval);
+        tickerInterval = null;
+      }
+    }
+
+    // Plant Identification API Call
+    async function identifyPlant() {
+      if (!selectedFile && !selectedDataUrl) {
+        showError("No Image Selected", "Please upload or capture a photo first.");
+        return;
+      }
+
+      dismissError();
+      resultCard.classList.add('hidden');
+      loadingCard.classList.remove('hidden');
+      startTicker();
+
+      loadingCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      try {
+        let response;
+        if (selectedFile) {
+          const formData = new FormData();
+          formData.append('image', selectedFile);
+          response = await fetch('/identify', {
+            method: 'POST',
+            body: formData
+          });
+        } else if (selectedDataUrl) {
+          response = await fetch('/identify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image_data: selectedDataUrl })
+          });
+        }
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || "Failed to identify plant.");
+        }
+
+        renderResult(data.data);
+
+      } catch (err) {
+        console.error("Identification error:", err);
+        showError("Identification Failed", err.message || "An unexpected error occurred while communicating with Gemini API.");
+      } finally {
+        stopTicker();
+        loadingCard.classList.add('hidden');
+      }
+    }
+
+    // Render Identification Result
+    function renderResult(result) {
+      lastResult = result;
+
+      // Extract fields with fallbacks
+      const plantName = result.plant_name || "Unknown Specimen";
+      const scientificName = result.scientific_name || "N/A";
+      const confidence = result.confidence || "Analyzed";
+      const description = result.description || "Botanical specimen examined.";
+      
+      const careTips = result.care_tips || {};
+      const water = careTips.water || "Maintain moderate moisture.";
+      const light = careTips.light || "Bright indirect sunlight recommended.";
+      const soil = careTips.soil || "Well-draining nutrient-rich soil mix.";
+
+      // Populate DOM elements
+      document.getElementById('resultPlantName').textContent = plantName;
+      document.getElementById('resultScientificName').textContent = scientificName;
+      document.getElementById('resultConfidence').textContent = confidence;
+      document.getElementById('resultDescription').textContent = description;
+
+      document.getElementById('careWater').textContent = water;
+      document.getElementById('careLight').textContent = light;
+      document.getElementById('careSoil').textContent = soil;
+
+      // Populate result thumbnail with currently active preview
+      document.getElementById('resultImagePreview').src = previewImage.src;
+
+      // If specimen is identified as non-plant, tweak badge
+      if (result.is_plant === false) {
+        document.getElementById('resultConfidenceBadge').className = "px-3 py-1 rounded-full text-xs font-bold bg-amber-500/30 text-amber-100 backdrop-blur-sm border border-amber-300/30 flex items-center gap-1.5";
+      } else {
+        document.getElementById('resultConfidenceBadge').className = "px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white backdrop-blur-sm border border-white/20 flex items-center gap-1.5";
+      }
+
+      resultCard.classList.remove('hidden');
+      resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Reset Application
+    function resetApp() {
+      clearSelectedImage();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Copy Result to Clipboard
+    async function copyResultSummary() {
+      if (!lastResult) return;
+      const care = lastResult.care_tips || {};
+      const summaryText = 
+`🌿 What's that Green Thing — Botanical Report
+Specimen: ${lastResult.plant_name}
+Scientific Name: ${lastResult.scientific_name}
+Confidence: ${lastResult.confidence}
+
+Overview:
+${lastResult.description}
+
+Care Tips:
+💧 Water: ${care.water || 'N/A'}
+☀️ Light: ${care.light || 'N/A'}
+🌱 Soil: ${care.soil || 'N/A'}`;
+
+      try {
+        await navigator.clipboard.writeText(summaryText);
+        const copyBtnText = document.getElementById('copyBtnText');
+        const originalText = copyBtnText.textContent;
+        copyBtnText.textContent = "Copied to Clipboard!";
+        setTimeout(() => {
+          copyBtnText.textContent = originalText;
+        }, 2200);
+      } catch (err) {
+        console.error("Clipboard copy failed:", err);
+      }
+    }
+
+    // Error Helpers
+    function showError(title, msg) {
+      errorTitle.textContent = title;
+      errorMessage.textContent = msg;
+      errorBanner.classList.remove('hidden');
+      errorBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function dismissError() {
+      errorBanner.classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
